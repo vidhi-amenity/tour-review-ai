@@ -1,0 +1,46 @@
+{
+    "button_insert_credential": {
+        "t": "xpath",
+        "v": "/html/body/div[1]/main/div[2]/div/div[2]/form/button"
+    },
+    "username_field": {
+        "t": "xpath",
+        "v": "/html/body/div[1]/main/div[2]/div/div[2]/form/div[1]/div/div/input"
+    },
+    "password_field": {
+        "t": "xpath",
+        "v": "/html/body/div[1]/main/div[2]/div/div[2]/form/div[2]/div[2]/div/input"
+    },
+    "next-page": {
+        "t": "xpath",
+        "v": "/html/body/div[1]/main/div[2]/div/footer/div/button[2]"
+    },
+    "reviews": {
+        "t": "class name",
+        "v": "card-content"
+    },
+    "product": {
+        "t": "tag name",
+        "v": "p"
+        },
+    "date": {
+        "t": "class name",
+        "v": "card-info-details"
+    },
+    "id": {
+        "t": "class name",
+        "v": "review-tour-data"
+    },
+    "review": {
+        "t":"tag name",
+        "v": "h4"
+    },
+    "rating": {
+        "t": "class name",
+        "v": "rating"
+    },
+    "tour-thumbnail": {
+        "t": "class name",
+        "v": "tour-thumbnail"
+    }
+}

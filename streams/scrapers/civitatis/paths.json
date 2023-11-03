@@ -1,0 +1,50 @@
+{
+  "button_accept_cookies": {
+    "t": "xpath",
+    "v": "/html/body/div[1]/div/div/div/div/div[2]/button[2]"
+  },
+  "button_insert_credential": {
+      "t": "xpath",
+      "v": "//*[@id=\"login-collaborators-trigger\"]/div"
+  },
+  "username_field": {
+      "t": "id",
+      "v": "login-name"
+  },
+  "password_field": {
+      "t": "id",
+      "v": "login-password"
+  },
+  "confirm_login": {
+      "t": "xpath",
+      "v": "/html/body/div[9]/div/div[2]/div/div/form/fieldset/div[2]/div[4]/div/button"
+  },
+  "sidebar": {
+      "t": "class name",
+      "v": "sidebar-menu"
+  },
+  "sort_table": {
+      "t": "class name",
+      "v": "sorting_asc"
+  },
+  "filter": {
+      "t": "class name",
+      "v": "select2-arrow"
+  },
+  "select_today": {
+      "t": "xpath",
+      "v": "/html/body/div[8]/ul/li[1]/div"
+  },
+  "waiting_reply_table": {
+      "t": "id",
+      "v": "last-reviews-report-table"
+  },
+  "not_reply_table": {
+      "t": "id",
+      "v": "not-answered-reviews-report-table"
+  },
+  "pagination": {
+      "t": "id",
+      "v": "not-answered-reviews-report-table_paginate"
+  }
+}

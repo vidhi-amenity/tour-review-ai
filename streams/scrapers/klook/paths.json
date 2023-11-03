@@ -1,0 +1,50 @@
+{
+    "email": {
+        "t": "css selector",
+        "v": "div.ant-tabs-tabpane:nth-child(1) > div:nth-child(2) > div:nth-child(1) > div:nth-child(1) > span:nth-child(1) > span:nth-child(1) > input:nth-child(1)"
+    },
+    "password": {
+        "t": "css selector",
+        "v": ".ant-input-password > input:nth-child(1)"
+    },
+    "login_button": {
+        "t": "css selector",
+        "v": ".operate-btn"
+    },
+    "reviews": {
+        "t": "css selector",
+        "v": ".klk_table > tbody:nth-child(2) > tr"
+    },
+    "product_id":
+    {
+        "t": "css selector",
+        "v": ".clickable_text.theme_color_text_underline.booking_link"
+    },
+    "iframe":
+    {
+        "t": "css selector",
+        "v": "iframe[src=\"/iframe/reviews\"]"
+    },
+    "product":
+    {
+        "t": "css selector",
+        "v": "td:nth-child(4) > p:nth-child(1)"
+    },
+    "rating":
+    {
+        "t": "class name",
+        "v": "klk_rate_light"
+    },
+    "date": {
+        "t": "css selector",
+        "v": "td:nth-child(3)"
+    },
+    "review": {
+        "t":"css selector",
+        "v": "td:nth-child(6)"
+    },
+    "response": {
+        "t": "css selector",
+        "v": "td:nth-child(7)"
+    }
+}

@@ -1,0 +1,99 @@
+version: "3"
+
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      shm_size: '512M'
+    shm_size: '512M'
+    volumes:
+      - static_volume:/home/app/staticfiles
+      - media_volume:/home/app/mediafiles
+      - files_volume:/home/app/files
+    restart: always
+    depends_on:
+      - db
+    env_file:
+      - ../.env
+
+  nginx-proxy:
+    build:
+      context: ./nginx
+      network: host
+    volumes:
+      - static_volume:/home/app/staticfiles
+      - media_volume:/home/app/mediafiles
+    ports:
+      - 8000:80
+    depends_on:
+      - backend
+    restart: always
+
+
+  redis:
+    image: redis:alpine
+    ports:
+      - 6379:6379
+    restart: always
+
+
+  celery:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    restart: always
+    command: celery -A tour_reviews_ai worker --concurrency=5 --prefetch-multiplier=1 -l info
+    volumes:
+      - ..:/usr/src/app/
+    env_file:
+      - ../.env
+    depends_on:
+      - redis
+      - backend
+
+  celery-beat:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    restart: always
+    command: celery -A tour_reviews_ai beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - ..:/usr/src/app/
+    env_file:
+      - ../.env
+    depends_on:
+      - redis
+      - backend
+
+  # db:
+  #   image: mysql:8
+  #   restart: always
+  #   volumes:
+  #     - db_data:/var/lib/mysql
+  #   ports:
+  #     - "3307:3306"
+  #   env_file:
+  #     - ../.env
+
+
+#  ngrok:
+#    image: wernight/ngrok
+#    command: ngrok http nginx-proxy:80
+#    ports:
+#      - 4040:4040
+#    restart: always
+#    depends_on:
+#      - nginx-proxy
+#    environment:
+#      - NGROK_AUTH_TOKEN=2SpwdS2asnpivAi0vc7xiV80SxY_SUA5ZpScZgVk2YQTgHnF
+
+
+
+
+volumes:
+  celery_volume:
+  static_volume:
+  media_volume:
+  files_volume:
+  db_data:
