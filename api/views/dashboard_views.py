@@ -12,7 +12,7 @@ from rest_framework import status
 from streams.apis.facebook_apis import reply_facebook_comment, reply_instagram_comment
 from django.db.models import Avg
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q, F, Count
 import tour_reviews_ai.tasks
 
 
@@ -21,13 +21,28 @@ class ReviewsTotalsAPIView(APIView):
         client = request.user.created_by if request.user.created_by else request.user
         overall_reviews = Review.objects.filter(client=client, date__gte=client.date_joined).count()
 
-        queryset = Review.objects.all()
-
         tour_id = self.request.query_params.get('tour_id', 'all')
         country_id = self.request.query_params.get('country_id', 'all')
         city_id = self.request.query_params.get('city_id', 'all')
-        start_date = self.request.query_params.get('start_date', 'all')
-        end_date = self.request.query_params.get('end_date', 'all')
+        start_date = self.request.query_params.get('start_date', None)
+        end_date = self.request.query_params.get('end_date', None)
+
+        if not start_date:
+            start_date = date.today() - timedelta(days=31)
+        else:
+            start_date = date.fromisoformat(start_date)
+        if not end_date:
+            end_date = date.today()
+        else:
+            end_date = date.fromisoformat(end_date)
+
+        if type(start_date) == datetime:
+            start_date = start_date.date()
+
+        if start_date < client.date_joined.date():
+            start_date = client.date_joined.date()
+
+        queryset = Review.objects.filter(client=client, date__range=(start_date, end_date))
 
         if tour_id and tour_id != 'all':
             tour_ids = [int(id) for id in tour_id.strip('[]').split(',')]
@@ -42,32 +57,61 @@ class ReviewsTotalsAPIView(APIView):
         if city_id and city_id != 'all':
             queryset = queryset.filter(city_id=city_id)
 
-        if (start_date and start_date != 'all') and (end_date and end_date != 'all'):
-            start_of_month = start_date
-            end_of_month = end_date
-        else:
-            today = datetime.now()
-            start_of_month = date(today.year, today.month, 1)
-            if start_of_month < client.date_joined.date():
-                start_of_month = client.date_joined.date()
-            end_of_month = start_of_month + timedelta(days=calendar.monthrange(today.year, today.month)[1])
-        
-        positive_count = queryset.filter(client=client, date__range=(start_of_month, end_of_month), rating=5).count()
-        neutral_count = queryset.filter(client=client, date__range=(start_of_month, end_of_month), rating=4).count()
-        negative_count = queryset.filter(client=client, date__range=(start_of_month, end_of_month), rating__lte=3).count()
+        last_review_id = queryset.filter(ai_checked=True).last()
 
-        responded_reviews = queryset.filter(client=client, date__range=(start_of_month, end_of_month), responded=True).count()
+        queryset = queryset.annotate(
+            total_reviews=Count('id'),
+            positive=Count('id', filter=Q(rating=5)),
+            passive=Count('id', filter=Q(rating=4)),
+            negative=Count('id', filter=Q(rating__lte=3)),
+            responded_count=Count('id', filter=Q(responded=True)),
+            pending_count=Count('id', filter=Q(responded=False)),
+        )
+
+        queryset = queryset.annotate(
+            country_code_annotation=F('country__code'),
+            country_name_annotation=F('country__name')
+        )
+
+        queryset = queryset.values(
+            'country_code_annotation',
+            'country_name_annotation',
+            'total_reviews',
+            'positive',
+            'passive',
+            'negative',
+            'responded_count',
+            'pending_count'
+        )
+        
+        total_count = positive_count = neutral_count = negative_count = responded_reviews = pending_reviews = 0
+        for review in queryset:
+            if not review['country_code_annotation'] or len(review['country_code_annotation']) < 2:
+                continue
+
+            total_count += review['total_reviews']
+            positive_count += review['positive']
+            neutral_count += review['passive']
+            negative_count += review['negative']
+            responded_reviews += review['responded_count']
+            pending_reviews += review['pending_count']
+
+        # positive_count = queryset.filter(client=client, date__range=(start_date, end_date), rating=5).count()
+        # neutral_count = queryset.filter(client=client, date__range=(start_date, end_date), rating=4).count()
+        # negative_count = queryset.filter(client=client, date__range=(start_date, end_date), rating__lte=3).count()
+
+        # responded_reviews = queryset.filter(responded=True).count()
 
         # pending = queryset.filter(client=client, date__range=(start_of_month, end_of_month), responded=False)
         # print(pending)
 
-        pending_reviews = queryset.filter(client=client, date__range=(start_of_month, end_of_month), responded=False).count()
+        # pending_reviews = queryset.filter(responded=False).count()
 
-        last_review_id = queryset.filter(client=client, ai_checked=True).last()
+        
         average_rating = queryset.all().aggregate(Avg('rating'))['rating__avg']
 
         reviews = {
-            "this_month": positive_count + negative_count + neutral_count,
+            "this_month": total_count,
             "positive": positive_count,
             "neutral": neutral_count,
             "negative": negative_count,
@@ -121,14 +165,30 @@ class PendingReviewViewSet(APIView):
     serializer_class = ReviewSerializer
     def get(self, request):
         client = request.user.created_by if request.user.created_by else request.user
-
-        queryset = Review.objects.all()
+        overall_reviews = Review.objects.filter(client=client, date__gte=client.date_joined).count()
 
         tour_id = self.request.query_params.get('tour_id', 'all')
         country_id = self.request.query_params.get('country_id', 'all')
         city_id = self.request.query_params.get('city_id', 'all')
-        start_date = self.request.query_params.get('start_date', 'all')
-        end_date = self.request.query_params.get('end_date', 'all')
+        start_date = self.request.query_params.get('start_date', None)
+        end_date = self.request.query_params.get('end_date', None)
+
+        if not start_date:
+            start_date = date.today() - timedelta(days=31)
+        else:
+            start_date = date.fromisoformat(start_date)
+        if not end_date:
+            end_date = date.today()
+        else:
+            end_date = date.fromisoformat(end_date)
+
+        if type(start_date) == datetime:
+            start_date = start_date.date()
+
+        if start_date < client.date_joined.date():
+            start_date = client.date_joined.date()
+
+        queryset = Review.objects.filter(client=client, date__range=(start_date, end_date))
 
         if tour_id and tour_id != 'all':
             tour_ids = [int(id) for id in tour_id.strip('[]').split(',')]
@@ -143,17 +203,15 @@ class PendingReviewViewSet(APIView):
         if city_id and city_id != 'all':
             queryset = queryset.filter(city_id=city_id)
 
-        if (start_date and start_date != 'all') and (end_date and end_date != 'all'):
-            start_of_month = start_date
-            end_of_month = end_date
-        else:
-            today = datetime.now()
-            start_of_month = date(today.year, today.month, 1)
-            if start_of_month < client.date_joined.date():
-                start_of_month = client.date_joined.date()
-            end_of_month = start_of_month + timedelta(days=calendar.monthrange(today.year, today.month)[1])
+        queryset = queryset.filter(responded=False)
 
-        queryset = queryset.filter(client=client, date__range=(start_of_month, end_of_month), responded=False)
+        queryset = queryset.annotate(
+            country_code_annotation=F('country__code'),
+            country_name_annotation=F('country__name')
+        )
+
+        queryset = queryset.exclude(country_code_annotation__isnull=True)
+        # print(queryset.count())
 
         serialized_data = self.serializer_class(queryset, many=True).data
 

@@ -270,7 +270,7 @@ def reviews_location(client, start_date, end_date, tour_id, country_id, city_id,
         start_date = date.today() - timedelta(days=31)
     if not end_date:
         end_date = date.today()
-
+    
     reviews = Review.objects.filter(client=client, date__range=(start_date, end_date))
     if source_stream != 'all':
         reviews = reviews.filter(source_stream=source_stream)
@@ -305,8 +305,8 @@ def reviews_location(client, start_date, end_date, tour_id, country_id, city_id,
 
     response_data = []
     for review in reviews:
-        # if not review['country_code_annotation'] or len(review['country_code_annotation']) < 2:
-        #     continue
+        if not review['country_code_annotation'] or len(review['country_code_annotation']) < 2:
+            continue
         color = ''
         positive_totalvalue = max(review.get('positive', 0), review.get('passive', 0), review.get('negative', 0))
         if review.get('positive', 0) == positive_totalvalue:
