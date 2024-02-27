@@ -280,10 +280,10 @@ CELERY_BEAT_SCHEDULE = {
     #     "task": "tour_reviews_ai.tasks.getcommentsfrominstagram",
     #     "schedule": crontab(minute="*/20"),
     # },
-    # "run_background_scrapers": {
-    #     "task": "tour_reviews_ai.tasks.run_background_scrapers",
-    #     "schedule": crontab(minute="*/40"),
-    # },
+    "run_background_scrapers": {
+        "task": "tour_reviews_ai.tasks.run_background_scrapers",
+        "schedule": crontab(minute="*/3"),
+    },
     "analise_reviews": {
         "task": "tour_reviews_ai.tasks.task_analise_reviews",
         "schedule": crontab(hour="*/10"),

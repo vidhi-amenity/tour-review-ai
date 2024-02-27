@@ -17,12 +17,16 @@ class ScraperBot(Mainbot):
 
         self.pages = []
         self.results = []
-        print(self.client)
+        print("Object = ", obj)
+        print("Username = ", self.username)
+        print("Client = ",self.client)
         super().__init__(__file__)
         try:
             self.start()
             self.close(instance=obj, success=True, is_adding_datastream=is_adding_datastream)
         except:
+            import traceback; 
+            print(traceback.print_exc())
             print("Something went wrong with Civitatis Scraper")
             self.close(instance=obj, success=False, is_adding_datastream=is_adding_datastream)
 

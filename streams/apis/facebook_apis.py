@@ -46,6 +46,8 @@ def get_facebook_reviews(obj):
         fields = 'rating,reviewer,has_rating,review_text,recommendation_type,created_time,has_review,open_graph_story'
         reviews = graph.get_connections(obj.page_id, 'ratings', fields=fields)
 
+        print("Facebook Reviews: ", reviews['data'])
+
         for r in reviews['data']:
             try:
                 user_id = r['open_graph_story']['id']

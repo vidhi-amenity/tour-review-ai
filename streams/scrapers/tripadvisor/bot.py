@@ -23,7 +23,7 @@ class ScraperBot(Mainbot):
             self.start()
             self.close(instance=obj, success=True, is_adding_datastream=is_adding_datastream)
         except Exception as e:
-            print(e)
+            print("Boat Error: "  + e)
             print("Something went wrong with Tripadvisor Scraper")
             if self.reviews_fetched:
                 self.close(instance=obj, success=True, is_adding_datastream=is_adding_datastream)

@@ -23,94 +23,95 @@ from api.models import UrlStream, CredentialStream, ApiKeyStream, \
 from django.utils import timezone
 
 
-# @shared_task
-# def run_background_scrapers():
-#     now = timezone.now()
-#     urls = CredentialStream.objects.filter(user__related_users__subscription_ends__gt=now, source_stream=CIVITAS)
-#     for url in urls:
-#         try:
-#             scrape.delay(url.id, 'CredentialStream')
-#         except Exception as e:
-#             print(e)
+@shared_task
+def run_background_scrapers():
+    print("Scrapper is started......!")
+    now = timezone.now()
+    urls = CredentialStream.objects.filter(user__related_users__subscription_ends__gt=now, source_stream=CIVITAS)
+    for url in urls:
+        try:
+            scrape.delay(url.id, 'CredentialStream')
+        except Exception as e:
+            print(e)
 
-#     urls = CredentialStream.objects.filter(user__related_users__subscription_ends__gt=now, source_stream=GETYOURGUIDE)
-#     for url in urls:
-#         try:
-#             scrape.delay(url.id, 'CredentialStream')
-#         except Exception as e:
-#             print(e)
+    urls = CredentialStream.objects.filter(user__related_users__subscription_ends__gt=now, source_stream=GETYOURGUIDE)
+    for url in urls:
+        try:
+            scrape.delay(url.id, 'CredentialStream')
+        except Exception as e:
+            print(e)
 
-#     urls = UrlStream.objects.filter(user__related_users__subscription_ends__gt=now, source_stream=AIRBNB)
-#     for url in urls:
-#         try:
-#             scrape.delay(url.id, 'UrlStream')
-#         except Exception as e:
-#             print(e)
+    urls = UrlStream.objects.filter(user__related_users__subscription_ends__gt=now, source_stream=AIRBNB)
+    for url in urls:
+        try:
+            scrape.delay(url.id, 'UrlStream')
+        except Exception as e:
+            print(e)
 
-#     urls = UrlStream.objects.filter(user__related_users__subscription_ends__gt=now, source_stream=VIATOR)
-#     for url in urls:
-#         try:
-#             scrape.delay(url.id, 'UrlStream')
-#         except Exception as e:
-#             print(e)
+    urls = UrlStream.objects.filter(user__related_users__subscription_ends__gt=now, source_stream=VIATOR)
+    for url in urls:
+        try:
+            scrape.delay(url.id, 'UrlStream')
+        except Exception as e:
+            print(e)
 
-#     urls = UrlStream.objects.filter(user__related_users__subscription_ends__gt=now, source_stream=TRIPADVISOR)
-#     for url in urls:
-#         try:
-#             scrape.delay(url.id, 'UrlStream')
-#         except Exception as e:
-#             print(e)
+    urls = UrlStream.objects.filter(user__related_users__subscription_ends__gt=now, source_stream=TRIPADVISOR)
+    for url in urls:
+        try:
+            scrape.delay(url.id, 'UrlStream')
+        except Exception as e:
+            print(e)
 
-#     urls = CredentialStream.objects.filter(user__related_users__subscription_ends__gt=now, source_stream=KLOOK)
-#     for url in urls:
-#         try:
-#             scrape.delay(url.id, 'CredentialStream')
-#         except Exception as e:
-#             print(e)
+    urls = CredentialStream.objects.filter(user__related_users__subscription_ends__gt=now, source_stream=KLOOK)
+    for url in urls:
+        try:
+            scrape.delay(url.id, 'CredentialStream')
+        except Exception as e:
+            print(e)
 
-#     urls = UrlStream.objects.filter(user__related_users__subscription_ends__gt=now, source_stream=EXPEDIA)
-#     for url in urls:
-#         try:
-#             scrape.delay(url.id, 'UrlStream')
-#         except Exception as e:
-#             print(e)
+    urls = UrlStream.objects.filter(user__related_users__subscription_ends__gt=now, source_stream=EXPEDIA)
+    for url in urls:
+        try:
+            scrape.delay(url.id, 'UrlStream')
+        except Exception as e:
+            print(e)
 
-#     urls = ApiKeyStream.objects.filter(user__related_users__subscription_ends__gt=now, source_stream=FACEBOOK)
-#     for url in urls:
-#         try:
-#             obj = get_object_or_404(ApiKeyStream, id=url.id)
-#             res = get_facebook_reviews(obj)
-#             get_facebook_comments(obj)
-#             success = res['success']
-#             client = obj.user.created_by if obj.user.created_by else obj.user
-#             text = f' ApiKey with page_id = "{obj.api_key}" is expired, please update it with a new ' \
-#                    'ApiKey to be able to keep fetching the reviews'
-#             if not success:
-#                 obj.status = Stream.WRONG
-#                 create_notification(client, status=failure_message['status'], text=text, source_stream=obj.source_stream)
-#             obj.save()
+    urls = ApiKeyStream.objects.filter(user__related_users__subscription_ends__gt=now, source_stream=FACEBOOK)
+    for url in urls:
+        try:
+            obj = get_object_or_404(ApiKeyStream, id=url.id)
+            res = get_facebook_reviews(obj)
+            get_facebook_comments(obj)
+            success = res['success']
+            client = obj.user.created_by if obj.user.created_by else obj.user
+            text = f' ApiKey with page_id = "{obj.api_key}" is expired, please update it with a new ' \
+                   'ApiKey to be able to keep fetching the reviews'
+            if not success:
+                obj.status = Stream.WRONG
+                create_notification(client, status=failure_message['status'], text=text, source_stream=obj.source_stream)
+            obj.save()
 
-#         except Exception as e:
-#             print(e)
+        except Exception as e:
+            print(e)
 
-#     urls = ApiKeyStream.objects.filter(user__related_users__subscription_ends__gt=now, source_stream=INSTAGRAM)
-#     for url in urls:
-#         try:
-#             obj = get_object_or_404(ApiKeyStream, id=url.id)
-#             res = get_instagram_comments(obj)
-#             success = res['success']
-#             client = obj.user.created_by if obj.user.created_by else obj.user
-#             text = f' ApiKey with page_id = "{obj.api_key}" is expired, please update it with a new ' \
-#                    'ApiKey to be able to keep fetching the reviews'
-#             if not success:
-#                 obj.status = Stream.WRONG
-#                 create_notification(client, status=failure_message['status'], text=text, source_stream=obj.source_stream)
-#             obj.save()
+    urls = ApiKeyStream.objects.filter(user__related_users__subscription_ends__gt=now, source_stream=INSTAGRAM)
+    for url in urls:
+        try:
+            obj = get_object_or_404(ApiKeyStream, id=url.id)
+            res = get_instagram_comments(obj)
+            success = res['success']
+            client = obj.user.created_by if obj.user.created_by else obj.user
+            text = f' ApiKey with page_id = "{obj.api_key}" is expired, please update it with a new ' \
+                   'ApiKey to be able to keep fetching the reviews'
+            if not success:
+                obj.status = Stream.WRONG
+                create_notification(client, status=failure_message['status'], text=text, source_stream=obj.source_stream)
+            obj.save()
 
-#         except Exception as e:
-#             print(e)
+        except Exception as e:
+            print(e)
 
-#     analise_reviews()
+    analise_reviews()
 
 @shared_task
 def task_analise_reviews():
@@ -322,7 +323,7 @@ def save_tmp_file_xlsx(doc_data, suffix):
 
 @shared_task(name="scrape")
 def scrape(instance_id, type, is_adding_datastream=False, *args, **kwargs):
-
+    print("Scrape Type = ", type)
     if type == 'UrlStream':
         instance = get_object_or_404(UrlStream, id=instance_id)
     if type == 'CredentialStream':
@@ -335,6 +336,7 @@ def scrape(instance_id, type, is_adding_datastream=False, *args, **kwargs):
     stream_name = get_streams(instance.source_stream)
     Bot = import_bot(stream_name)
     bot = Bot(instance, is_adding_datastream)
+    print("BOT = ", bot)
     if not settings.PRODUCTION:
         return bot
 

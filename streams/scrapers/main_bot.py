@@ -13,6 +13,7 @@ from api.models import Stream
 from api.serializers import failure_message, success_message
 from streams.models import Proxy
 from tour_reviews_ai.tasks import scrape
+from selenium.common.exceptions import TimeoutException
 
 SCROLL_INTERVAL = 2.5
 NORMAL_SLEEP = 3
@@ -66,12 +67,17 @@ class Mainbot:
 
     def wait_for_el(self, el, time_to_wait=30, multiple=False, item=None):
         self.sleep(1)
+        print("Element = ", el)
         wait = WebDriverWait(self.driver, time_to_wait)
-        if item:
-            wait = WebDriverWait(item, time_to_wait)
-        if multiple:
-            return wait.until(EC.visibility_of_all_elements_located((self.extract_el(el))))
-        return wait.until(EC.visibility_of_element_located((self.extract_el(el))))
+        try:
+            if item:
+                wait = WebDriverWait(item, time_to_wait)
+            if multiple:
+                return wait.until(EC.visibility_of_all_elements_located((self.extract_el(el))))
+            return wait.until(EC.visibility_of_element_located((self.extract_el(el))))
+        except TimeoutException as e:
+            import traceback; 
+            print(traceback.print_exc())
 
     def find_el(self, el, item=None, multiple=False):
         method, value = self.extract_el(el)
